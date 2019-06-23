@@ -5,6 +5,7 @@ import keystore.client.models.ErrorResponse;
 import keystore.client.models.KeyValue;
 import keystore.client.services.KeyValueStoreService;
 import keystore.client.services.KeyValueStoreServiceFactory;
+import keystore.client.services.WatchService;
 import retrofit2.Response;
 
 import java.io.IOException;
@@ -42,6 +43,9 @@ public class App {
                     key = getArgument(args, 1, "key");
                     delete(key);
                     break;
+                case "watch":
+                    watch();
+                    break;
                 default:
                     System.err.println("Unknown command: " + command);
                     showUsage();
@@ -70,7 +74,8 @@ public class App {
                         "    get-all              Gets all key value stored in the server\n" +
                         "    get    <key>         Fetches the value of the given key from keystore server.\n" +
                         "    set    <key> <value> Set the value of the key in keystore server.\n" +
-                        "    delete <key>         Deletes the given key from keystore server.\n");
+                        "    delete <key>         Deletes the given key from keystore server.\n" +
+                        "    watch                Watches keystore server for changes\n");
     }
 
     private static void getAll() throws IOException {
@@ -78,7 +83,7 @@ public class App {
 
         if (response.isSuccessful()) {
             for (KeyValue entry : response.body()) {
-                System.out.printf("%s:%s\n", entry.getKey(), entry.getValue());
+                System.out.printf("%s => %s\n", entry.getKey(), entry.getValue());
             }
         } else {
             handleError(response);
@@ -110,6 +115,20 @@ public class App {
         } else {
             handleError(response);
         }
+    }
+
+    private static void watch() {
+        WatchService watchService = new WatchService();
+        watchService.watch(changeEvent -> {
+
+            KeyValue keyValue = changeEvent.getEntry();
+
+            String keyValueString = keyValue == null ? "<non-existent>" : String.format("%s => %s",
+                    keyValue.getKey(),
+                    keyValue.getValue());
+
+            System.out.printf("%s %s\n", changeEvent.getType(), keyValueString);
+        });
     }
 
     private static void handleError(Response<?> response) throws IOException {
