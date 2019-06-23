@@ -1,5 +1,5 @@
 This repository provides Client side Implementation of the <a href="https://github.com/Nancy-Chauhan/keystore">Project</a>.
-A user can one can perform set(key, val) and get(key) operations over HTTP and also subscribe to changes happening to any of the keys.
+A user can perform set(key, val) and get(key) operations over HTTP and also subscribe to changes happening to any of the keys.
 
 ## Libraries used
 
